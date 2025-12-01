@@ -50,7 +50,7 @@ const prompt = ai.definePrompt({
   name: 'suggestOptimalFeedingSchedulePrompt',
   input: {schema: SuggestOptimalFeedingScheduleInputSchema},
   output: {schema: SuggestOptimalFeedingScheduleOutputSchema},
-  prompt: `You are an expert pediatrician specializing in infant nutrition. Based on the information provided, suggest an optimal feeding schedule for the baby.
+  prompt: `You are an expert pediatrician specializing in infant nutrition. Based on the information provided, suggest an optimal feeding schedule for the baby in Bahasa Indonesia.
 
 Baby Age: {{babyAgeMonths}} months
 Baby Weight: {{babyWeightKg}} kg
@@ -60,7 +60,7 @@ News Events: {{newsEvents}}
 
 Consider all factors, including age, weight, feeding history, weather conditions, and news events, to create a comprehensive feeding schedule. Provide specific times and amounts for each feeding, and specify whether breast milk or formula is recommended.
 
-Suggested Feeding Schedule:`, //Ensure schedule contains specific times and amounts for each feeding.
+Suggested Feeding Schedule (in Bahasa Indonesia):`,
 });
 
 const suggestOptimalFeedingScheduleFlow = ai.defineFlow(
