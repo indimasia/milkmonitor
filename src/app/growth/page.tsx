@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { AppContext } from "@/context/app-context";
-import { LineChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart as ChartIcon, Baby, Weight, Ruler, Trash2, Pencil } from "lucide-react";
 import {
@@ -329,30 +329,30 @@ export default function GrowthPage() {
                     {chartData.length > 1 ? (
                         <>
                         <div>
-                        <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2"><Weight className="h-4 w-4 text-chart-1"/>Weight (kg)</h3>
-                        <ChartContainer config={chartConfig} className="h-60 w-full">
-                            <ResponsiveContainer>
-                                <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                                    <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
-                                    <YAxis domain={['dataMin - 1', 'dataMax + 1']} tickLine={false} axisLine={false} tickMargin={8}/>
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <defs>
-                                        <linearGradient id="fillWeight" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="var(--color-weight)" stopOpacity={0.8}/>
-                                        <stop offset="95%" stopColor="var(--color-weight)" stopOpacity={0.1}/>
-                                        </linearGradient>
-                                    </defs>
-                                    <Area type="monotone" dataKey="weight" stroke="hsl(var(--chart-1))" fill="url(#fillWeight)" strokeWidth={2} />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </ChartContainer>
+                          <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2"><Weight className="h-4 w-4 text-chart-1"/>Weight (kg)</h3>
+                          <ChartContainer config={chartConfig} className="h-60 w-full">
+                              <ResponsiveContainer>
+                                  <AreaChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                                      <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                                      <YAxis domain={['dataMin - 1', 'dataMax + 1']} tickLine={false} axisLine={false} tickMargin={8}/>
+                                      <ChartTooltip content={<ChartTooltipContent />} />
+                                      <defs>
+                                          <linearGradient id="fillWeight" x1="0" y1="0" x2="0" y2="1">
+                                          <stop offset="5%" stopColor="var(--color-weight)" stopOpacity={0.8}/>
+                                          <stop offset="95%" stopColor="var(--color-weight)" stopOpacity={0.1}/>
+                                          </linearGradient>
+                                      </defs>
+                                      <Area type="monotone" dataKey="weight" stroke="hsl(var(--chart-1))" fill="url(#fillWeight)" strokeWidth={2} />
+                                  </AreaChart>
+                              </ResponsiveContainer>
+                          </ChartContainer>
                         </div>
                          <div>
                             <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2"><Ruler className="h-4 w-4 text-chart-2"/>Height (cm)</h3>
                             <ChartContainer config={chartConfig} className="h-60 w-full">
                                 <ResponsiveContainer>
-                                <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                                <AreaChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
                                     <CartesianGrid vertical={false} strokeDasharray="3 3"/>
                                     <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8}/>
                                     <YAxis domain={['dataMin - 2', 'dataMax + 2']} tickLine={false} axisLine={false} tickMargin={8}/>
@@ -364,7 +364,27 @@ export default function GrowthPage() {
                                         </linearGradient>
                                     </defs>
                                     <Area type="monotone" dataKey="height" stroke="hsl(var(--chart-2))" fill="url(#fillHeight)" strokeWidth={2} />
-                                </LineChart>
+                                </AreaChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2"><Baby className="h-4 w-4 text-chart-3"/>Head (cm)</h3>
+                            <ChartContainer config={chartConfig} className="h-60 w-full">
+                                <ResponsiveContainer>
+                                <AreaChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                                    <CartesianGrid vertical={false} strokeDasharray="3 3"/>
+                                    <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8}/>
+                                    <YAxis domain={['dataMin - 1', 'dataMax + 1']} tickLine={false} axisLine={false} tickMargin={8}/>
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                     <defs>
+                                        <linearGradient id="fillHead" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="var(--color-headCircumference)" stopOpacity={0.8}/>
+                                        <stop offset="95%" stopColor="var(--color-headCircumference)" stopOpacity={0.1}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <Area type="monotone" dataKey="headCircumference" stroke="hsl(var(--chart-3))" fill="url(#fillHead)" strokeWidth={2} />
+                                </AreaChart>
                                 </ResponsiveContainer>
                             </ChartContainer>
                         </div>
