@@ -225,7 +225,7 @@ export default function GrowthPage() {
   const chartConfig = {
       weight: { label: "Weight (kg)", color: "hsl(var(--chart-1))" },
       height: { label: "Height (cm)", color: "hsl(var(--chart-2))" },
-      head: { label: "Head (cm)", color: "hsl(var(--chart-3))" },
+      headCircumference: { label: "Head (cm)", color: "hsl(var(--chart-3))" },
   };
 
   const sortedGrowthRecords = useMemo(() => {
@@ -336,14 +336,14 @@ export default function GrowthPage() {
                                     <CartesianGrid vertical={false} strokeDasharray="3 3" />
                                     <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
                                     <YAxis domain={['dataMin - 1', 'dataMax + 1']} tickLine={false} axisLine={false} tickMargin={8}/>
-                                    <Tooltip content={<ChartTooltipContent />} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
                                     <defs>
                                         <linearGradient id="fillWeight" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="var(--color-weight)" stopOpacity={0.8}/>
                                         <stop offset="95%" stopColor="var(--color-weight)" stopOpacity={0.1}/>
                                         </linearGradient>
                                     </defs>
-                                    <Area type="monotone" dataKey="weight" stroke="var(--color-weight)" fill="url(#fillWeight)" strokeWidth={2} />
+                                    <Area type="monotone" dataKey="weight" stroke="hsl(var(--chart-1))" fill="url(#fillWeight)" strokeWidth={2} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </ChartContainer>
@@ -356,14 +356,14 @@ export default function GrowthPage() {
                                     <CartesianGrid vertical={false} strokeDasharray="3 3"/>
                                     <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8}/>
                                     <YAxis domain={['dataMin - 2', 'dataMax + 2']} tickLine={false} axisLine={false} tickMargin={8}/>
-                                    <Tooltip content={<ChartTooltipContent />} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
                                      <defs>
                                         <linearGradient id="fillHeight" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="var(--color-height)" stopOpacity={0.8}/>
                                         <stop offset="95%" stopColor="var(--color-height)" stopOpacity={0.1}/>
                                         </linearGradient>
                                     </defs>
-                                    <Area type="monotone" dataKey="height" stroke="var(--color-height)" fill="url(#fillHeight)" strokeWidth={2} />
+                                    <Area type="monotone" dataKey="height" stroke="hsl(var(--chart-2))" fill="url(#fillHeight)" strokeWidth={2} />
                                 </LineChart>
                                 </ResponsiveContainer>
                             </ChartContainer>
