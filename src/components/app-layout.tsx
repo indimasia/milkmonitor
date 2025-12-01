@@ -6,7 +6,7 @@ import {
   LayoutDashboard,
   Milk,
   LineChart,
-  CalendarClock,
+  BrainCircuit,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -29,7 +29,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/feedings", label: "Feedings", icon: Milk },
     { href: "/growth", label: "Growth", icon: LineChart },
-    { href: "/schedule", label: "Schedule", icon: CalendarClock },
+    { href: "/suggestions", label: "AI Suggestions", icon: BrainCircuit },
   ];
 
   return (

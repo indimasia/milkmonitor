@@ -37,7 +37,7 @@ const formSchema = z.object({
   newsEvents: z.string().optional(),
 });
 
-export default function SchedulePage() {
+export default function SuggestionsPage() {
   const { feedings, setSchedule } = useContext(AppContext);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -71,10 +71,23 @@ export default function SchedulePage() {
     setGeneratedSchedule(null);
     try {
       const result = await suggestOptimalFeedingSchedule(values);
-      setGeneratedSchedule(result);
+      const formattedResult = {
+        ...result,
+        suggestedSchedule: result.suggestedSchedule
+          .split('\n')
+          .map(line => {
+            if (line.match(/^\s*\*/)) {
+              return line;
+            }
+            const boldedLine = line.replace(/(\d{1,2}:\d{2}\s?[AP]M)/g, '**$1**');
+            return boldedLine;
+          })
+          .join('\n'),
+      };
+      setGeneratedSchedule(formattedResult);
       setSchedule(result);
       toast({
-        title: "Schedule Generated!",
+        title: "Suggestion Ready!",
         description: "Your new AI-powered feeding schedule is ready.",
       });
     } catch (error) {
@@ -83,18 +96,44 @@ export default function SchedulePage() {
         variant: "destructive",
         title: "Oh no! Something went wrong.",
         description:
-          "There was a problem generating the schedule. Please try again.",
+          "There was a problem generating the suggestion. Please try again.",
       });
     } finally {
       setIsLoading(false);
     }
   }
 
+  const renderFormattedSchedule = (schedule: string) => {
+    const lines = schedule.split('\n');
+    return (
+      <div>
+        {lines.map((line, index) => {
+          if (line.trim().startsWith('*')) {
+            return <p key={index} className="mt-4 text-sm text-muted-foreground">{line.replace('*', '').trim()}</p>
+          }
+          const parts = line.split(/(\*\*.*?\*\*)/g);
+          return (
+            <p key={index} className="mb-2">
+              {parts.map((part, i) =>
+                part.startsWith('**') && part.endsWith('**') ? (
+                  <strong key={i} className="text-primary">{part.slice(2, -2)}</strong>
+                ) : (
+                  part
+                )
+              )}
+            </p>
+          );
+        })}
+      </div>
+    );
+  };
+
+
   return (
     <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
       <header>
         <h1 className="text-3xl font-bold tracking-tight text-foreground/90 font-headline">
-          Smart Schedule Tool
+          AI Suggestions
         </h1>
         <p className="text-muted-foreground">
           Let AI help you create an optimal feeding schedule for your baby.
@@ -166,7 +205,7 @@ export default function SchedulePage() {
                     ) : (
                       <BrainCircuit className="mr-2 h-4 w-4" />
                     )}
-                    Generate Schedule
+                    Get Suggestions
                   </Button>
                 </form>
               </Form>
@@ -190,8 +229,8 @@ export default function SchedulePage() {
                   </p>
                 </div>
               ) : generatedSchedule ? (
-                <div className="w-full p-4 rounded-md bg-background border whitespace-pre-wrap font-mono text-sm">
-                  {generatedSchedule.suggestedSchedule}
+                <div className="w-full p-4 rounded-md bg-background border text-sm">
+                  {renderFormattedSchedule(generatedSchedule.suggestedSchedule)}
                 </div>
               ) : (
                 <div className="text-center text-muted-foreground">

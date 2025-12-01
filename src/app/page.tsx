@@ -15,7 +15,6 @@ import { AppContext } from "@/context/app-context";
 import {
   Baby,
   LineChart,
-  CalendarClock,
   ArrowRight,
   Milk,
   Ruler,
@@ -25,71 +24,13 @@ import { format } from "date-fns";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export default function Dashboard() {
-  const { feedings, growthRecords, schedule } = useContext(AppContext);
+  const { feedings, growthRecords } = useContext(AppContext);
 
   const lastFeeding = feedings.length > 0 ? feedings[0] : null;
   const lastGrowthRecord =
     growthRecords.length > 0 ? growthRecords[0] : null;
   
   const welcomeImage = PlaceHolderImages.find(p => p.id === 'dashboard-welcome');
-
-  const getNextFeedingTime = () => {
-    if (!schedule) return null;
-
-    // This is a simple parsing logic, assuming schedule is a list of times.
-    // A more robust implementation would parse the schedule more carefully.
-    const scheduleLines = schedule.suggestedSchedule.split('\n');
-    const now = new Date();
-
-    for (const line of scheduleLines) {
-        const match = line.match(/(\d{1,2}:\d{2}\s?[AP]M)/i);
-        if (match) {
-            const timeStr = match[1];
-            const [hourMinute, period] = timeStr.split(' ');
-            let [hour, minute] = hourMinute.split(':').map(Number);
-
-            if (period && period.toLowerCase() === 'pm' && hour < 12) {
-                hour += 12;
-            }
-            if (period && period.toLowerCase() === 'am' && hour === 12) {
-                hour = 0;
-            }
-
-            const feedingTime = new Date(now);
-            feedingTime.setHours(hour, minute, 0, 0);
-
-            if (feedingTime > now) {
-                return feedingTime;
-            }
-        }
-    }
-    // If all feeding times are past, return the first one for the next day.
-     const firstLine = scheduleLines.find(line => line.match(/(\d{1,2}:\d{2}\s?[AP]M)/i));
-     if(firstLine){
-        const match = firstLine.match(/(\d{1,2}:\d{2}\s?[AP]M)/i);
-        if (match) {
-          const timeStr = match[1];
-          const [hourMinute, period] = timeStr.split(' ');
-          let [hour, minute] = hourMinute.split(':').map(Number);
-
-          if (period && period.toLowerCase() === 'pm' && hour < 12) {
-              hour += 12;
-          }
-          if (period && period.toLowerCase() === 'am' && hour === 12) {
-              hour = 0;
-          }
-          const tomorrow = new Date();
-          tomorrow.setDate(tomorrow.getDate() + 1);
-          tomorrow.setHours(hour, minute, 0, 0);
-          return tomorrow;
-        }
-     }
-
-
-    return null;
-  };
-
-  const nextFeedingTime = getNextFeedingTime();
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8 animate-in fade-in duration-500">
@@ -110,40 +51,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="flex flex-col bg-accent/50 border-accent">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <CalendarClock />
-              Next Feeding
-            </CardTitle>
-            <CardDescription>
-              Based on your AI-generated schedule.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex-grow flex flex-col items-center justify-center gap-4 text-center">
-            {nextFeedingTime ? (
-              <>
-                <p className="text-4xl font-bold text-primary">
-                  {format(nextFeedingTime, "h:mm a")}
-                </p>
-                <p className="text-muted-foreground">
-                  {format(nextFeedingTime, "EEEE, MMMM d")}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-muted-foreground">No schedule found.</p>
-                <Link href="/schedule">
-                  <Button variant="outline">
-                    Generate Schedule <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="flex flex-col">
+        <Card className="flex flex-col md:col-span-1 lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Milk />
