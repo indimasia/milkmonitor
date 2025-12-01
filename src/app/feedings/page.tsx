@@ -45,7 +45,7 @@ const formSchema = z.object({
   dateTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: "Valid date and time is required",
   }),
-  type: z.enum(["Breast Milk", "Formula"]),
+  type: z.enum(["DBF", "EBM", "Formula"]),
   amount: z.coerce
     .number()
     .min(1, "Amount must be greater than 0")
@@ -60,7 +60,7 @@ export default function FeedingsPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       dateTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
-      type: "Breast Milk",
+      type: "EBM",
       amount: 100,
     },
   });
@@ -132,9 +132,10 @@ export default function FeedingsPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Breast Milk">
-                              Breast Milk
+                            <SelectItem value="DBF">
+                              Direct Breastfeeding (DBF)
                             </SelectItem>
+                            <SelectItem value="EBM">Expressed Breast Milk (EBM)</SelectItem>
                             <SelectItem value="Formula">Formula</SelectItem>
                           </SelectContent>
                         </Select>

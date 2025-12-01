@@ -60,7 +60,7 @@ export default function SchedulePage() {
       babyAgeMonths: 3,
       babyWeightKg: 5.5,
       feedingHistory:
-        feedingHistorySummary || "Example: Yesterday 9am: 120ml Formula, 12pm: 110ml Breast Milk...",
+        feedingHistorySummary || "Example: Yesterday 9am: 120ml Formula, 12pm: 110ml EBM...",
       weatherCondition: "Mild and sunny",
       newsEvents: "None",
     },

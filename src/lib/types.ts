@@ -1,7 +1,7 @@
 export type FeedingLog = {
   id: string;
   dateTime: string;
-  type: "Breast Milk" | "Formula";
+  type: "DBF" | "EBM" | "Formula";
   amount: number; // in ml
 };
 
