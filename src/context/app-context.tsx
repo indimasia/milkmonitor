@@ -8,7 +8,11 @@ interface AppContextType {
   growthRecords: GrowthRecord[];
   schedule: FeedingSchedule | null;
   addFeeding: (feeding: Omit<FeedingLog, "id">) => void;
+  updateFeeding: (id: string, updatedFeeding: Omit<FeedingLog, "id">) => void;
+  deleteFeeding: (id: string) => void;
   addGrowthRecord: (record: Omit<GrowthRecord, "id">) => void;
+  updateGrowthRecord: (id: string, updatedRecord: Omit<GrowthRecord, "id">) => void;
+  deleteGrowthRecord: (id: string) => void;
   setSchedule: (schedule: FeedingSchedule) => void;
 }
 
@@ -17,7 +21,11 @@ export const AppContext = createContext<AppContextType>({
   growthRecords: [],
   schedule: null,
   addFeeding: () => {},
+  updateFeeding: () => {},
+  deleteFeeding: () => {},
   addGrowthRecord: () => {},
+  updateGrowthRecord: () => {},
+  deleteGrowthRecord: () => {},
   setSchedule: () => {},
 });
 
@@ -64,10 +72,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const newFeeding = { ...feeding, id: new Date().toISOString() };
     setFeedings((prev) => [newFeeding, ...prev]);
   };
+  
+  const updateFeeding = (id: string, updatedFeeding: Omit<FeedingLog, "id">) => {
+    setFeedings(prev => prev.map(f => f.id === id ? { ...updatedFeeding, id } : f));
+  };
+
+  const deleteFeeding = (id: string) => {
+    setFeedings(prev => prev.filter(f => f.id !== id));
+  };
 
   const addGrowthRecord = (record: Omit<GrowthRecord, "id">) => {
     const newRecord = { ...record, id: new Date().toISOString() };
     setGrowthRecords((prev) => [newRecord, ...prev]);
+  };
+
+  const updateGrowthRecord = (id: string, updatedRecord: Omit<GrowthRecord, "id">) => {
+    setGrowthRecords(prev => prev.map(r => r.id === id ? { ...updatedRecord, id } : r));
+  };
+
+  const deleteGrowthRecord = (id: string) => {
+    setGrowthRecords(prev => prev.filter(r => r.id !== id));
   };
 
   return (
@@ -77,7 +101,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         growthRecords,
         schedule,
         addFeeding,
+        updateFeeding,
+        deleteFeeding,
         addGrowthRecord,
+        updateGrowthRecord,
+        deleteGrowthRecord,
         setSchedule,
       }}
     >

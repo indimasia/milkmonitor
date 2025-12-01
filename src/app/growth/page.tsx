@@ -26,7 +26,36 @@ import { useToast } from "@/hooks/use-toast";
 import { AppContext } from "@/context/app-context";
 import { LineChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart as ChartIcon, Baby, Weight, Ruler } from "lucide-react";
+import { LineChart as ChartIcon, Baby, Weight, Ruler, Trash2, Pencil } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import type { GrowthRecord } from "@/lib/types";
+
 
 const formSchema = z.object({
   date: z.string().refine((val) => !isNaN(Date.parse(val)), {
@@ -37,9 +66,106 @@ const formSchema = z.object({
   headCircumference: z.coerce.number().min(1, "Head circumference must be greater than 0").positive(),
 });
 
-export default function GrowthPage() {
-  const { growthRecords, addGrowthRecord } = useContext(AppContext);
+function EditGrowthRecordForm({ record, onFinished }: { record: GrowthRecord, onFinished: () => void }) {
+  const { updateGrowthRecord } = useContext(AppContext);
   const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      date: format(new Date(record.date), "yyyy-MM-dd"),
+      weight: record.weight,
+      height: record.height,
+      headCircumference: record.headCircumference,
+    },
+  });
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    updateGrowthRecord(record.id, values);
+    toast({
+      title: "Growth Record Updated!",
+      description: "The record has been successfully updated.",
+    });
+    onFinished();
+  }
+
+  return (
+     <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6"
+        >
+          <FormField
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Date</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="weight"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2"><Weight className="h-4 w-4"/> Weight (kg)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="height"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2"><Ruler className="h-4 w-4"/> Height (cm)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.1" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          </div>
+          <FormField
+            control={form.control}
+            name="headCircumference"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2"><Baby className="h-4 w-4"/> Head (cm)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.1" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button type="submit">Save Changes</Button>
+          </DialogFooter>
+        </form>
+      </Form>
+  )
+}
+
+export default function GrowthPage() {
+  const { growthRecords, addGrowthRecord, deleteGrowthRecord } = useContext(AppContext);
+  const { toast } = useToast();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<GrowthRecord | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,6 +190,24 @@ export default function GrowthPage() {
       headCircumference: values.headCircumference
     });
   }
+  
+  const handleDelete = (record: GrowthRecord) => {
+    setSelectedRecord(record);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedRecord) {
+      deleteGrowthRecord(selectedRecord.id);
+      toast({
+        title: "Growth Record Deleted",
+        description: "The growth record has been removed.",
+        variant: "destructive",
+      });
+      setSelectedRecord(null);
+    }
+    setIsDeleteDialogOpen(false);
+  };
 
   const chartData = useMemo(() => {
     return growthRecords
@@ -83,6 +227,10 @@ export default function GrowthPage() {
       height: { label: "Height (cm)", color: "hsl(var(--chart-2))" },
       head: { label: "Head (cm)", color: "hsl(var(--chart-3))" },
   };
+
+  const sortedGrowthRecords = useMemo(() => {
+    return [...growthRecords].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [growthRecords]);
 
   return (
     <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
@@ -229,8 +377,80 @@ export default function GrowthPage() {
                     )}
                 </CardContent>
             </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Measurement History</CardTitle>
+                    <CardDescription>A complete log of all growth records.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Date</TableHead>
+                                <TableHead>Weight (kg)</TableHead>
+                                <TableHead>Height (cm)</TableHead>
+                                <TableHead>Head (cm)</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {sortedGrowthRecords.length > 0 ? (
+                                sortedGrowthRecords.map((record) => (
+                                <TableRow key={record.id}>
+                                    <TableCell>{format(new Date(record.date), "MMM d, yyyy")}</TableCell>
+                                    <TableCell>{record.weight}</TableCell>
+                                    <TableCell>{record.height}</TableCell>
+                                    <TableCell>{record.headCircumference}</TableCell>
+                                    <TableCell className="text-right">
+                                     <Dialog open={isEditDialogOpen && selectedRecord?.id === record.id} onOpenChange={(isOpen) => {
+                                        if (!isOpen) setSelectedRecord(null);
+                                        setIsEditDialogOpen(isOpen);
+                                      }}>
+                                        <DialogTrigger asChild>
+                                          <Button variant="ghost" size="icon" onClick={() => setSelectedRecord(record)}>
+                                            <Pencil className="h-4 w-4" />
+                                          </Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                          <DialogHeader>
+                                            <DialogTitle>Edit Growth Record</DialogTitle>
+                                          </DialogHeader>
+                                          {selectedRecord && <EditGrowthRecordForm record={selectedRecord} onFinished={() => setIsEditDialogOpen(false)} />}
+                                        </DialogContent>
+                                      </Dialog>
+                                      <Button variant="ghost" size="icon" onClick={() => handleDelete(record)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                      </Button>
+                                    </TableCell>
+                                </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                <TableCell colSpan={5} className="text-center h-24">
+                                    No growth records logged yet.
+                                </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
         </div>
       </div>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the growth record.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
