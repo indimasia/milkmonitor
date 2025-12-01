@@ -1,3 +1,10 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "dashboard-welcome",
+      "description": "A peaceful newborn baby sleeping.",
+      "imageUrl": "https://images.unsplash.com/photo-1610901137736-d7cc46657b11?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxuZXdib3JuJTIwYmFieXxlbnwwfHx8fDE3NjQ1MzA5NTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "newborn baby"
+    }
+  ]
 }
