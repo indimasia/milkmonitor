@@ -368,58 +368,60 @@ export default function FeedingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[180px]">Date & Time</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Amount (ml)</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedFeedings.length > 0 ? (
-                    sortedFeedings.map((feeding) => (
-                      <TableRow key={feeding.id}>
-                        <TableCell>
-                          {format(new Date(feeding.dateTime), "MMM d, h:mm a")}
-                        </TableCell>
-                        <TableCell>{feeding.type}</TableCell>
-                        <TableCell>
-                          {feeding.amount}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Dialog open={isEditDialogOpen && selectedFeeding?.id === feeding.id} onOpenChange={(isOpen) => {
-                            if (!isOpen) setSelectedFeeding(null);
-                            setIsEditDialogOpen(isOpen);
-                          }}>
-                            <DialogTrigger asChild>
-                              <Button variant="ghost" size="icon" onClick={() => setSelectedFeeding(feeding)}>
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Edit Feeding</DialogTitle>
-                              </DialogHeader>
-                              {selectedFeeding && <EditFeedingForm feeding={selectedFeeding} onFinished={() => setIsEditDialogOpen(false)} />}
-                            </DialogContent>
-                          </Dialog>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(feeding)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+              <div className="w-full overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[180px] sm:w-auto">Date & Time</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedFeedings.length > 0 ? (
+                      sortedFeedings.map((feeding) => (
+                        <TableRow key={feeding.id}>
+                          <TableCell>
+                            {format(new Date(feeding.dateTime), "MMM d, h:mm a")}
+                          </TableCell>
+                          <TableCell>{feeding.type}</TableCell>
+                          <TableCell>
+                            {feeding.amount}ml
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Dialog open={isEditDialogOpen && selectedFeeding?.id === feeding.id} onOpenChange={(isOpen) => {
+                              if (!isOpen) setSelectedFeeding(null);
+                              setIsEditDialogOpen(isOpen);
+                            }}>
+                              <DialogTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => setSelectedFeeding(feeding)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Edit Feeding</DialogTitle>
+                                </DialogHeader>
+                                {selectedFeeding && <EditFeedingForm feeding={selectedFeeding} onFinished={() => setIsEditDialogOpen(false)} />}
+                              </DialogContent>
+                            </Dialog>
+                            <Button variant="ghost" size="icon" onClick={() => handleDelete(feeding)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center h-24">
+                          No feedings logged yet.
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center h-24">
-                        No feedings logged yet.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>

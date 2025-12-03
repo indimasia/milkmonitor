@@ -10,24 +10,13 @@ import {
   BrainCircuit,
   LogOut,
   User,
+  Menu,
 } from "lucide-react";
 import { AppContext } from "@/context/app-context";
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarInset,
-  SidebarTrigger,
-  SidebarSeparator,
-} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Logo } from "@/components/icons";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -47,72 +36,74 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="shrink-0" asChild>
-              <Link href="/">
-                <Logo className="size-5 text-primary" />
-              </Link>
-            </Button>
-            <h2 className="text-lg font-semibold tracking-tight font-headline">
+  const sidebarContent = (
+    <>
+        <div className="flex items-center gap-2 p-4 border-b">
+            <Logo className="size-6 text-primary" />
+            <h2 className="text-xl font-semibold tracking-tight font-headline">
               MilkMonitor
             </h2>
+        </div>
+        <div className="flex-1 p-4">
+            <nav className="flex flex-col gap-2">
+                {navItems.map((item) => (
+                    <SheetClose key={item.href} asChild>
+                        <Link href={item.href} passHref>
+                            <Button
+                                variant={pathname === item.href ? "secondary" : "ghost"}
+                                className="justify-start gap-3"
+                            >
+                                <item.icon className="size-4" />
+                                <span>{item.label}</span>
+                            </Button>
+                        </Link>
+                    </SheetClose>
+                ))}
+            </nav>
+        </div>
+        <div className="p-4 border-t">
+          <div className="flex items-center gap-3 mb-4">
+             <Avatar className="size-9">
+                <AvatarFallback>
+                  <User />
+                </AvatarFallback>
+              </Avatar>
+             <span className="text-sm font-medium truncate">{currentUser?.email}</span>
           </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href} passHref>
-                  <SidebarMenuButton
-                    isActive={pathname === item.href}
-                    tooltip={{ children: item.label }}
-                  >
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          <SidebarSeparator />
-          <SidebarMenu>
-            <SidebarMenuItem>
-               <SidebarMenuButton tooltip={{children: currentUser?.email}}>
-                 <Avatar className="size-7">
-                    <AvatarFallback>
-                      <User />
-                    </AvatarFallback>
-                  </Avatar>
-                 <span>{currentUser?.email}</span>
-               </SidebarMenuButton>
-             </SidebarMenuItem>
-             <SidebarMenuItem>
-               <SidebarMenuButton onClick={logout} tooltip={{children: 'Logout'}}>
-                 <LogOut />
-                 <span>Logout</span>
-               </SidebarMenuButton>
-             </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex items-center h-14 border-b bg-background/80 backdrop-blur-sm md:hidden px-4">
-            <SidebarTrigger />
-            <div className="flex items-center gap-2 mx-auto">
-                <Logo className="size-5 text-primary" />
+          <Button variant="outline" className="w-full justify-start gap-3" onClick={logout}>
+             <LogOut className="size-4"/>
+             <span>Logout</span>
+          </Button>
+        </div>
+    </>
+  )
+
+  return (
+    <div className="flex min-h-screen w-full">
+      <aside className="hidden md:flex md:flex-col md:w-64 md:border-r bg-background">
+        {sidebarContent}
+      </aside>
+      <div className="flex-1">
+        <header className="sticky top-0 z-10 flex items-center justify-between h-14 border-b bg-background/80 backdrop-blur-sm px-4 md:hidden">
+            <div className="flex items-center gap-2">
+                <Logo className="size-6 text-primary" />
                 <h2 className="text-lg font-semibold tracking-tight font-headline">
                 MilkMonitor
                 </h2>
             </div>
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button variant="outline" size="icon">
+                        <Menu className="h-6 w-6" />
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-64 p-0 flex flex-col">
+                   {sidebarContent}
+                </SheetContent>
+            </Sheet>
         </header>
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+        <main>{children}</main>
+      </div>
+    </div>
   );
 }

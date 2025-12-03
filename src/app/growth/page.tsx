@@ -403,56 +403,58 @@ export default function GrowthPage() {
                     <CardDescription>A complete log of all growth records.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Weight (kg)</TableHead>
-                                <TableHead>Height (cm)</TableHead>
-                                <TableHead>Head (cm)</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {sortedGrowthRecords.length > 0 ? (
-                                sortedGrowthRecords.map((record) => (
-                                <TableRow key={record.id}>
-                                    <TableCell>{format(new Date(record.date), "MMM d, yyyy")}</TableCell>
-                                    <TableCell>{record.weight}</TableCell>
-                                    <TableCell>{record.height}</TableCell>
-                                    <TableCell>{record.headCircumference}</TableCell>
-                                    <TableCell className="text-right">
-                                     <Dialog open={isEditDialogOpen && selectedRecord?.id === record.id} onOpenChange={(isOpen) => {
-                                        if (!isOpen) setSelectedRecord(null);
-                                        setIsEditDialogOpen(isOpen);
-                                      }}>
-                                        <DialogTrigger asChild>
-                                          <Button variant="ghost" size="icon" onClick={() => setSelectedRecord(record)}>
-                                            <Pencil className="h-4 w-4" />
-                                          </Button>
-                                        </DialogTrigger>
-                                        <DialogContent>
-                                          <DialogHeader>
-                                            <DialogTitle>Edit Growth Record</DialogTitle>
-                                          </DialogHeader>
-                                          {selectedRecord && <EditGrowthRecordForm record={selectedRecord} onFinished={() => setIsEditDialogOpen(false)} />}
-                                        </DialogContent>
-                                      </Dialog>
-                                      <Button variant="ghost" size="icon" onClick={() => handleDelete(record)}>
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                      </Button>
-                                    </TableCell>
-                                </TableRow>
-                                ))
-                            ) : (
+                    <div className="w-full overflow-x-auto">
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                <TableCell colSpan={5} className="text-center h-24">
-                                    No growth records logged yet.
-                                </TableCell>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Weight</TableHead>
+                                    <TableHead>Height</TableHead>
+                                    <TableHead>Head</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {sortedGrowthRecords.length > 0 ? (
+                                    sortedGrowthRecords.map((record) => (
+                                    <TableRow key={record.id}>
+                                        <TableCell>{format(new Date(record.date), "MMM d, yyyy")}</TableCell>
+                                        <TableCell>{record.weight}kg</TableCell>
+                                        <TableCell>{record.height}cm</TableCell>
+                                        <TableCell>{record.headCircumference}cm</TableCell>
+                                        <TableCell className="text-right">
+                                        <Dialog open={isEditDialogOpen && selectedRecord?.id === record.id} onOpenChange={(isOpen) => {
+                                            if (!isOpen) setSelectedRecord(null);
+                                            setIsEditDialogOpen(isOpen);
+                                        }}>
+                                            <DialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" onClick={() => setSelectedRecord(record)}>
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            </DialogTrigger>
+                                            <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>Edit Growth Record</DialogTitle>
+                                            </DialogHeader>
+                                            {selectedRecord && <EditGrowthRecordForm record={selectedRecord} onFinished={() => setIsEditDialogOpen(false)} />}
+                                            </DialogContent>
+                                        </Dialog>
+                                        <Button variant="ghost" size="icon" onClick={() => handleDelete(record)}>
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                    <TableCell colSpan={5} className="text-center h-24">
+                                        No growth records logged yet.
+                                    </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
         </div>
