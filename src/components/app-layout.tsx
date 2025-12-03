@@ -25,28 +25,37 @@ const navItems = [
   { href: "/suggestions", label: "AI Suggestions", icon: BrainCircuit },
 ];
 
+function NavLinks({ isMobile }: { isMobile?: boolean }) {
+  const pathname = usePathname();
+  const links = navItems.map((item) => {
+    const linkButton = (
+      <Link key={item.href} href={item.href} passHref>
+        <Button
+          variant={pathname === item.href ? "secondary" : "ghost"}
+          className="justify-start w-full gap-3"
+        >
+          <item.icon className="size-4" />
+          <span>{item.label}</span>
+        </Button>
+      </Link>
+    );
+    if (isMobile) {
+      return <SheetClose asChild key={item.href}>{linkButton}</SheetClose>;
+    }
+    return linkButton;
+  });
+
+  return <nav className="flex flex-col gap-2">{links}</nav>;
+}
+
 function SidebarContent({ isMobile = false }: { isMobile?: boolean }) {
-    const pathname = usePathname();
     const { currentUser, logout } = useContext(AppContext);
     
-    const navLinks = (
-        <nav className="flex flex-col gap-2">
-            {navItems.map((item) => {
-                const link = (
-                    <Link key={item.href} href={item.href} passHref>
-                        <Button
-                            variant={pathname === item.href ? "secondary" : "ghost"}
-                            className="justify-start gap-3"
-                        >
-                            <item.icon className="size-4" />
-                            <span>{item.label}</span>
-                        </Button>
-                    </Link>
-                );
-
-                return isMobile ? <SheetClose asChild>{link}</SheetClose> : link;
-            })}
-        </nav>
+    const logoutButton = (
+        <Button variant="outline" className="w-full justify-start gap-3" onClick={logout}>
+            <LogOut className="size-4"/>
+            <span>Logout</span>
+        </Button>
     );
 
     return (
@@ -58,7 +67,7 @@ function SidebarContent({ isMobile = false }: { isMobile?: boolean }) {
                 </h2>
             </div>
             <div className="flex-1 p-4">
-                {navLinks}
+                <NavLinks isMobile={isMobile} />
             </div>
             <div className="p-4 border-t">
             <div className="flex items-center gap-3 mb-4">
@@ -69,12 +78,7 @@ function SidebarContent({ isMobile = false }: { isMobile?: boolean }) {
                 </Avatar>
                 <span className="text-sm font-medium truncate">{currentUser?.email}</span>
             </div>
-            <SheetClose asChild>
-                <Button variant="outline" className="w-full justify-start gap-3" onClick={logout}>
-                    <LogOut className="size-4"/>
-                    <span>Logout</span>
-                </Button>
-            </SheetClose>
+            {isMobile ? <SheetClose asChild>{logoutButton}</SheetClose> : logoutButton}
             </div>
         </>
     );
