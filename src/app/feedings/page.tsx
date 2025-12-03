@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useContext } from "react";
+import { useState, useContext, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
+import { format, startOfDay, eachDayOfInterval, isSameDay } from "date-fns";
 import {
   Card,
   CardContent,
@@ -56,9 +56,11 @@ import {
   DialogClose,
   DialogFooter
 } from "@/components/ui/dialog";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { useToast } from "@/hooks/use-toast";
 import { AppContext } from "@/context/app-context";
-import { Milk, Trash2, Pencil } from "lucide-react";
+import { Milk, Trash2, Pencil, BarChart2 } from "lucide-react";
 import type { FeedingLog } from "@/lib/types";
 
 const formSchema = z.object({
@@ -202,6 +204,42 @@ export default function FeedingsPage() {
     }
     setIsDeleteDialogOpen(false);
   };
+  
+  const sortedFeedings = useMemo(() => {
+    return [...feedings].sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
+  }, [feedings]);
+
+  const chartData = useMemo(() => {
+    if (feedings.length === 0) return [];
+    
+    const sorted = [...feedings].sort((a,b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
+    const firstDay = startOfDay(new Date(sorted[0].dateTime));
+    const lastDay = startOfDay(new Date(sorted[sorted.length - 1].dateTime));
+    const dateRange = eachDayOfInterval({start: firstDay, end: lastDay});
+
+    const dailyTotals = new Map<string, number>();
+
+    dateRange.forEach(date => {
+        dailyTotals.set(format(date, 'yyyy-MM-dd'), 0);
+    });
+
+    feedings.forEach(feeding => {
+        const day = format(startOfDay(new Date(feeding.dateTime)), 'yyyy-MM-dd');
+        const currentTotal = dailyTotals.get(day) || 0;
+        dailyTotals.set(day, currentTotal + feeding.amount);
+    });
+
+    return Array.from(dailyTotals.entries()).map(([date, amount]) => ({
+      date: date,
+      name: format(new Date(date), "MMM d"),
+      amount: amount
+    }));
+  }, [feedings]);
+
+  const chartConfig = {
+      amount: { label: "Total Amount (ml)", color: "hsl(var(--chart-1))" },
+  };
+
 
   return (
     <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
@@ -289,12 +327,44 @@ export default function FeedingsPage() {
             </CardContent>
           </Card>
         </div>
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-8">
+           <Card>
+              <CardHeader>
+                  <CardTitle>Daily Feeding Summary</CardTitle>
+                  <CardDescription>Total feeding amount (ml) per day.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {chartData.length > 1 ? (
+                  <ChartContainer config={chartConfig} className="h-60 w-full">
+                    <ResponsiveContainer>
+                      <AreaChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                        <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                        <YAxis domain={['dataMin - 50', 'dataMax + 50']} tickLine={false} axisLine={false} tickMargin={8} unit="ml"/>
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <defs>
+                          <linearGradient id="fillAmount" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--color-amount)" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="var(--color-amount)" stopOpacity={0.1}/>
+                          </linearGradient>
+                        </defs>
+                        <Area type="monotone" dataKey="amount" stroke="hsl(var(--chart-1))" fill="url(#fillAmount)" strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center h-60 text-muted-foreground">
+                    <BarChart2 className="h-12 w-12 mb-4" />
+                    <p>Log feedings for at least two different days to see a chart.</p>
+                  </div>
+                )}
+              </CardContent>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle>Feeding History</CardTitle>
               <CardDescription>
-                A complete list of all logged feedings.
+                A complete list of all logged feedings, sorted by most recent.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -308,8 +378,8 @@ export default function FeedingsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {feedings.length > 0 ? (
-                    feedings.map((feeding) => (
+                  {sortedFeedings.length > 0 ? (
+                    sortedFeedings.map((feeding) => (
                       <TableRow key={feeding.id}>
                         <TableCell>
                           {format(new Date(feeding.dateTime), "MMM d, h:mm a")}
