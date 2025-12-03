@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -19,18 +19,69 @@ import {
   Milk,
   Ruler,
   Weight,
+  BarChart2,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfDay, eachDayOfInterval } from "date-fns";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 export default function Dashboard() {
   const { feedings, growthRecords } = useContext(AppContext);
 
-  const lastFeeding = feedings.length > 0 ? feedings[0] : null;
-  const lastGrowthRecord =
-    growthRecords.length > 0 ? growthRecords[0] : null;
+  const lastFeeding = feedings.length > 0 ? [...feedings].sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime())[0] : null;
+  const lastGrowthRecord = growthRecords.length > 0 ? [...growthRecords].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0] : null;
   
   const welcomeImage = PlaceHolderImages.find(p => p.id === 'dashboard-welcome');
+
+  const feedingChartData = useMemo(() => {
+    if (feedings.length === 0) return [];
+    
+    const sorted = [...feedings].sort((a,b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
+    const firstDay = startOfDay(new Date(sorted[0].dateTime));
+    const lastDay = startOfDay(new Date(sorted[sorted.length - 1].dateTime));
+    const dateRange = eachDayOfInterval({start: firstDay, end: lastDay});
+
+    const dailyTotals = new Map<string, number>();
+
+    dateRange.forEach(date => {
+        dailyTotals.set(format(date, 'yyyy-MM-dd'), 0);
+    });
+
+    feedings.forEach(feeding => {
+        const day = format(startOfDay(new Date(feeding.dateTime)), 'yyyy-MM-dd');
+        const currentTotal = dailyTotals.get(day) || 0;
+        dailyTotals.set(day, currentTotal + feeding.amount);
+    });
+
+    return Array.from(dailyTotals.entries()).map(([date, amount]) => ({
+      date: date,
+      name: format(new Date(date), "MMM d"),
+      amount: amount
+    }));
+  }, [feedings]);
+
+  const feedingChartConfig = {
+      amount: { label: "Total Amount (ml)", color: "hsl(var(--chart-1))" },
+  };
+
+  const growthChartData = useMemo(() => {
+    return growthRecords
+      .map(record => ({
+        ...record,
+        date: new Date(record.date),
+      }))
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .map(record => ({
+        ...record,
+        name: format(record.date, "MMM d"),
+      }));
+  }, [growthRecords]);
+
+  const growthChartConfig = {
+      weight: { label: "Weight (kg)", color: "hsl(var(--chart-2))" },
+  };
+
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8 animate-in fade-in duration-500">
@@ -51,7 +102,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="flex flex-col md:col-span-1 lg:col-span-2">
+        <Card className="flex flex-col md:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Milk />
@@ -78,7 +129,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col">
+        <Card className="flex flex-col md:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <LineChart />
@@ -124,11 +175,10 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
-      </div>
 
-       {(feedings.length === 0 || growthRecords.length === 0) && welcomeImage && (
-         <Card className="overflow-hidden">
-             <div className="relative w-full h-64">
+        {(feedings.length === 0 || growthRecords.length === 0) && welcomeImage ? (
+         <Card className="overflow-hidden md:col-span-2 lg:col-span-1">
+             <div className="relative w-full h-full min-h-64">
                 <Image
                     src={welcomeImage.imageUrl}
                     alt={welcomeImage.description}
@@ -138,14 +188,94 @@ export default function Dashboard() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6">
-                    <h2 className="text-2xl font-bold text-white font-headline">Get Started with MilkMonitor</h2>
-                    <p className="text-white/80 mt-2 max-w-lg">
-                        Start by logging your baby's first feeding or growth measurement to see the magic happen.
+                    <h2 className="text-2xl font-bold text-white font-headline">Get Started</h2>
+                    <p className="text-white/80 mt-1">
+                        Log a feeding or growth record.
                     </p>
                 </div>
              </div>
          </Card>
+       ) : (
+        <Card className="lg:col-span-3 xl:col-span-1">
+           <CardHeader>
+                <CardTitle>Get Started</CardTitle>
+                <CardDescription>Log your baby's first feeding or growth measurement.</CardDescription>
+           </CardHeader>
+           <CardContent className="flex flex-col gap-4">
+              <Link href="/feedings"><Button className="w-full">Log Feeding</Button></Link>
+              <Link href="/growth"><Button variant="secondary" className="w-full">Log Growth</Button></Link>
+           </CardContent>
+        </Card>
        )}
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+         <Card>
+            <CardHeader>
+                <CardTitle>Daily Feeding Summary</CardTitle>
+                <CardDescription>Total feeding amount (ml) over the last week.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {feedingChartData.length > 1 ? (
+                <ChartContainer config={feedingChartConfig} className="h-60 w-full">
+                  <ResponsiveContainer>
+                    <AreaChart data={feedingChartData.slice(-7)} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                      <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                      <YAxis domain={['dataMin - 50', 'dataMax + 50']} tickLine={false} axisLine={false} tickMargin={8} unit="ml"/>
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <defs>
+                        <linearGradient id="fillAmount" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-amount)" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="var(--color-amount)" stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <Area type="monotone" dataKey="amount" stroke="hsl(var(--chart-1))" fill="url(#fillAmount)" strokeWidth={2} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center h-60 text-muted-foreground">
+                  <BarChart2 className="h-12 w-12 mb-4" />
+                  <p>Log feedings for at least two different days to see a chart.</p>
+                </div>
+              )}
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Weight Growth</CardTitle>
+                <CardDescription>Baby's weight progress over time (kg).</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {growthChartData.length > 1 ? (
+                    <ChartContainer config={growthChartConfig} className="h-60 w-full">
+                        <ResponsiveContainer>
+                            <AreaChart data={growthChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                                <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                                <YAxis domain={['dataMin - 1', 'dataMax + 1']} tickLine={false} axisLine={false} tickMargin={8}/>
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <defs>
+                                    <linearGradient id="fillWeight" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="var(--color-weight)" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="var(--color-weight)" stopOpacity={0.1}/>
+                                    </linearGradient>
+                                </defs>
+                                <Area type="monotone" dataKey="weight" stroke="hsl(var(--chart-2))" fill="url(#fillWeight)" strokeWidth={2} />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                ) : (
+                    <div className="flex flex-col items-center justify-center text-center h-60 text-muted-foreground">
+                       <LineChart className="h-12 w-12 mb-4" />
+                       <p>Log at least two measurements to see a growth chart.</p>
+                   </div>
+                )}
+            </CardContent>
+        </Card>
+      </div>
+
     </div>
   );
 }
