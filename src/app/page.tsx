@@ -96,11 +96,6 @@ export default function Dashboard() {
             Here's a quick look at your baby's day.
           </p>
         </div>
-        <Link href="/feedings">
-          <Button>
-            <Milk className="mr-2 h-4 w-4" /> Log New Feeding
-          </Button>
-        </Link>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
