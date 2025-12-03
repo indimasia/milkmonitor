@@ -80,6 +80,8 @@ export default function Dashboard() {
 
   const growthChartConfig = {
       weight: { label: "Weight (kg)", color: "hsl(var(--chart-2))" },
+      height: { label: "Height (cm)", color: "hsl(var(--chart-3))" },
+      headCircumference: { label: "Head (cm)", color: "hsl(var(--chart-4))" },
   };
 
 
@@ -209,7 +211,7 @@ export default function Dashboard() {
        )}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
          <Card>
             <CardHeader>
                 <CardTitle>Daily Feeding Summary</CardTitle>
@@ -244,8 +246,8 @@ export default function Dashboard() {
         </Card>
         <Card>
             <CardHeader>
-                <CardTitle>Weight Growth</CardTitle>
-                <CardDescription>Baby's weight progress over time (kg).</CardDescription>
+                <CardTitle>Weight Growth (kg)</CardTitle>
+                <CardDescription>Baby's weight progress over time.</CardDescription>
             </CardHeader>
             <CardContent>
                 {growthChartData.length > 1 ? (
@@ -274,8 +276,74 @@ export default function Dashboard() {
                 )}
             </CardContent>
         </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Height Growth (cm)</CardTitle>
+                <CardDescription>Baby's height progress over time.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {growthChartData.length > 1 ? (
+                    <ChartContainer config={growthChartConfig} className="h-60 w-full">
+                        <ResponsiveContainer>
+                            <AreaChart data={growthChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                                <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                                <YAxis domain={['dataMin - 2', 'dataMax + 2']} tickLine={false} axisLine={false} tickMargin={8}/>
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <defs>
+                                    <linearGradient id="fillHeight" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="var(--color-height)" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="var(--color-height)" stopOpacity={0.1}/>
+                                    </linearGradient>
+                                </defs>
+                                <Area type="monotone" dataKey="height" stroke="hsl(var(--chart-3))" fill="url(#fillHeight)" strokeWidth={2} />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                ) : (
+                    <div className="flex flex-col items-center justify-center text-center h-60 text-muted-foreground">
+                       <LineChart className="h-12 w-12 mb-4" />
+                       <p>Log at least two measurements to see a growth chart.</p>
+                   </div>
+                )}
+            </CardContent>
+        </Card>
+         <Card>
+            <CardHeader>
+                <CardTitle>Head Growth (cm)</CardTitle>
+                <CardDescription>Baby's head circumference progress.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {growthChartData.length > 1 ? (
+                    <ChartContainer config={growthChartConfig} className="h-60 w-full">
+                        <ResponsiveContainer>
+                            <AreaChart data={growthChartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                                <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                                <YAxis domain={['dataMin - 1', 'dataMax + 1']} tickLine={false} axisLine={false} tickMargin={8}/>
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <defs>
+                                    <linearGradient id="fillHeadCircumference" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="var(--color-headCircumference)" stopOpacity={0.8}/>
+                                    <stop offset="95%" stopColor="var(--color-headCircumference)" stopOpacity={0.1}/>
+                                    </linearGradient>
+                                </defs>
+                                <Area type="monotone" dataKey="headCircumference" stroke="hsl(var(--chart-4))" fill="url(#fillHeadCircumference)" strokeWidth={2} />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </ChartContainer>
+                ) : (
+                    <div className="flex flex-col items-center justify-center text-center h-60 text-muted-foreground">
+                       <LineChart className="h-12 w-12 mb-4" />
+                       <p>Log at least two measurements to see a growth chart.</p>
+                   </div>
+                )}
+            </CardContent>
+        </Card>
       </div>
 
     </div>
   );
 }
+
+    
