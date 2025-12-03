@@ -16,3 +16,9 @@ export type GrowthRecord = {
 export type FeedingSchedule = {
   suggestedSchedule: string;
 };
+
+export type User = {
+  id: string;
+  email: string;
+  password?: string; // Should not be stored in production, but ok for dummy auth
+};
