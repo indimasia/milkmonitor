@@ -3,6 +3,7 @@
 import { useContext, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import Autoplay from "embla-carousel-autoplay";
 import {
   Card,
   CardContent,
@@ -25,6 +26,13 @@ import { format, startOfDay, eachDayOfInterval } from "date-fns";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function Dashboard() {
   const { feedings, growthRecords } = useContext(AppContext);
@@ -33,6 +41,7 @@ export default function Dashboard() {
   const lastGrowthRecord = growthRecords.length > 0 ? [...growthRecords].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0] : null;
   
   const welcomeImage = PlaceHolderImages.find(p => p.id === 'dashboard-welcome');
+  const bannerImages = PlaceHolderImages.filter(p => p.id.startsWith('dashboard-banner'));
 
   const feedingChartData = useMemo(() => {
     if (feedings.length === 0) return [];
@@ -87,6 +96,44 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8 animate-in fade-in duration-500">
+      <Carousel
+        className="w-full"
+        plugins={[
+          Autoplay({
+            delay: 5000,
+            stopOnInteraction: true,
+          }),
+        ]}
+      >
+        <CarouselContent>
+          {bannerImages.map((image) => (
+            <CarouselItem key={image.id}>
+              <Link href={image.link || "#"}>
+                <Card className="overflow-hidden">
+                  <div className="relative w-full h-48 md:h-64">
+                    <Image
+                      src={image.imageUrl}
+                      alt={image.description}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={image.imageHint}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 p-6">
+                      <h2 className="text-2xl font-bold text-white font-headline">
+                        {image.description}
+                      </h2>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="hidden sm:flex" />
+        <CarouselNext className="hidden sm:flex" />
+      </Carousel>
+
       <div className="flex flex-col md:flex-row justify-between items-start gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground/90 font-headline">
